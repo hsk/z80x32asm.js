@@ -7,6 +7,8 @@ Start:
       jp0 $1234
       jp0 nz,bc
       jp0 z,$1234
+      jp0 Start
+      jp0 z,Start
 
 
       jp0 nz, $1234
@@ -18,6 +20,7 @@ Start:
       jp0 p,  $1234
       jp0 m,  $1234
       jp0     $1234
+
 
       jp0 nz, bc
       jp0 z,  bc

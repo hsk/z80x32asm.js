@@ -1,4 +1,4 @@
-all: test.hex
+all: jp0.hex jp.hex
 
 clean:
 	rm -f *.hex

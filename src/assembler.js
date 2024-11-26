@@ -21,6 +21,7 @@ function stringToData(s) {
     }
     return data;
 }
+
 class Assembler {
     constructor(spec) {
         this.ip = 0;
@@ -105,8 +106,7 @@ class Assembler {
         var op = result.opcode;
         var nb = result.nbits / this.width;
         for (var i = 0; i < nb; i++) {
-            var v = Math.floor(op / (Math.pow(2, ((nb - 1 - i) * this.width)))) 
-            this.outwords[this.ip++ - this.origin] = v & ((1 << this.width) - 1);
+            this.outwords[this.ip++ - this.origin] = parseInt(op.substr(i*this.width,this.width),2);
         }
     }
     addWords(data) {
@@ -140,8 +140,7 @@ class Assembler {
             return parseInt(s);
     }
     buildInstruction(rule, m) {
-        var opcode = 0;
-        var oplen = 0;
+        var opcode = "";
         // iterate over each component of the rule output ("bits")
         for (var _i = 0, _a = rule.bits; _i < _a.length; _i++) {
             var b = _a[_i];
@@ -176,24 +175,24 @@ class Assembler {
                     x = this.parseConst(id, n);
                     // is it a label? add fixup
                     if (isNaN(x)) {
-                        this.fixups.push({ sym: id, ofs: this.ip, bitlen: n, bitofs: oplen, line: this.linenum, iprel: !!v.iprel, ipofs: (v.ipofs + 0) });
+                        this.fixups.push({ sym: id, ofs: this.ip, bitlen: n, bitofs: opcode.length, line: this.linenum, iprel: !!v.iprel, ipofs: (v.ipofs + 0) });
                         x = 0;
                     }
                 }
             }
-            var mask = (1 << n) - 1;
-            if ((x & mask) != x)
-                return { error: "Value " + x + " does not fit in " + n + " bits" };
-            opcode = (opcode * (1 << n)) + x;
-            oplen += n;
+            var mask = Math.pow(2, n) - 1;
+            if ((x & mask) != x) {
+                return { error: "Value " + x + " does not fit in " + n + " bits " + mask.toString(16) };
+            }
+            opcode += x.toString(2).padStart(n,"0");
         }
-        if (oplen == 0)
+        if (opcode.length == 0)
             this.warning("Opcode had zero length");
-        //else if (oplen > 32)
+        //else if (opcode.length > 32)
         //    this.warning("Opcodes > 32 bits not supported");
-        else if ((oplen % this.width) != 0)
-            this.warning("Opcode was not word-aligned (" + oplen + " bits)");
-        return { opcode: opcode, nbits: oplen };
+        else if ((opcode.length % this.width) != 0)
+            this.warning("Opcode was not word-aligned (" + opcode.length + " bits)");
+        return { opcode: opcode, nbits: opcode.length };
     }
     loadArch(arch) {
         if (this.loadJSON) {
@@ -283,7 +282,7 @@ class Assembler {
             if (sym) {
                 var ofs = fix.ofs + Math.floor(fix.bitofs / this.width);
                 var shift = fix.bitofs & (this.width - 1);
-                var mask = ((1 << fix.bitlen) - 1);
+                var mask = (Math.pow(2, fix.bitlen) - 1);
                 var value = this.parseConst(sym.value + "", fix.bitlen);
                 if (fix.iprel)
                     value -= fix.ofs + fix.ipofs;
@@ -292,7 +291,8 @@ class Assembler {
                 value &= mask;
                 // TODO: check range
                 // TODO: span multiple words?
-                this.outwords[ofs - this.origin] ^= value; // TODO: << shift?
+                for(var j = 0; j < fix.bitlen/8;j++)
+                    this.outwords[ofs - this.origin+j] ^= (value >>> (fix.bitlen-(j+1)*8))&255; // TODO: << shift?
             }
             else {
                 this.warning("Symbol '" + fix.sym + "' not found");

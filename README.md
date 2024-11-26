@@ -17,7 +17,7 @@ z80x32asm.js は [Z80拡張案 - 32bit拡張](https://sei.2-d.jp/z80x/z80x_32bit
 ## 命令の実装状況
 
 - [x] [JP0](https://sei.2-d.jp/z80x/z80x_32bit.html#inst_JP0): 互換エリアへジャンプ
-- [ ] [JP](http://sei.2-d.jp/z80x/z80x_32bit.html#inst_JP): 絶対ジャンプ
+- [x] [JP](http://sei.2-d.jp/z80x/z80x_32bit.html#inst_JP): 絶対ジャンプ
 - [ ] [JR](http://sei.2-d.jp/z80x/z80x_32bit.html#inst_JR): 相対ジャンプ
 - [ ] [CALL0](http://sei.2-d.jp/z80x/z80x_32bit.html#inst_CALL0): 互換エリアのコール
 - [ ] [RET](http://sei.2-d.jp/z80x/z80x_32bit.html#inst_RET): リターン
@@ -83,3 +83,4 @@ MIT
 ## 更新履歴
 
 - v0.0.1 2024/11/26 jp0を仮実装
+- v0.0.2 2024/11/26 jpを追加。精度漏れを修正。ラベル処理の修正
